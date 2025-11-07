@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Clock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background 2s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .settings-icon {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .settings-icon:hover {
+            transform: rotate(90deg);
+        }
+
+        .settings-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+            opacity: 0.7;
+        }
+
+        .settings-panel {
+            position: absolute;
+            top: 80px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 99;
+            min-width: 250px;
+        }
+
+        .settings-panel.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        body.dark .settings-panel {
+            background: rgba(30, 30, 40, 0.95);
+            color: #fff;
+        }
+
+        .setting-item {
+            margin-bottom: 20px;
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.8;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .switch.active {
+            background: #4CAF50;
+        }
+
+        .switch-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .switch.active .switch-thumb {
+            transform: translateX(24px);
+        }
+
+        .clock-container {
+            text-align: center;
+            color: #fff;
+            padding: 40px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s ease;
+            max-width: 90vw;
+        }
+
+        body.dark .clock-container {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .time {
+            font-size: clamp(3rem, 12vw, 8rem);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+            text-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .date {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 400;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .day {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .timezone {
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            opacity: 0.7;
+            font-weight: 300;
+        }
+
+        /* Time of day backgrounds */
+        body.dawn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+
+        body.morning {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        body.noon {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        body.afternoon {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        body.dusk {
+            background: linear-gradient(135deg, #ee9ca7 0%, #ffdde1 50%, #2193b0 100%);
+        }
+
+        body.night {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7474bf 100%);
+        }
+
+        body.dark.dawn {
+            background: linear-gradient(135deg, #2c3e50 0%, #3d4e60 50%, #4a5568 100%);
+        }
+
+        body.dark.morning {
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        }
+
+        body.dark.noon {
+            background: linear-gradient(135deg, #2d3436 0%, #1e272e 100%);
+        }
+
+        body.dark.afternoon {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        }
+
+        body.dark.dusk {
+            background: linear-gradient(135deg, #232526 0%, #414345 50%, #1a1a2e 100%);
+        }
+
+        body.dark.night {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        }
+
+        @media (max-width: 768px) {
+            .clock-container {
+                padding: 30px 20px;
+            }
+
+            .settings-icon {
+                top: 20px;
+                right: 20px;
+                width: 35px;
+                height: 35px;
+            }
+
+            .settings-panel {
+                top: 70px;
+                right: 20px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-icon" onclick="toggleSettings()">
+        <svg viewBox="0 0 24 24">
+            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+        </svg>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+        <div class="setting-item">
+            <label class="setting-label">12/24 Hour Format</label>
+            <div class="toggle-switch">
+                <span>12h</span>
+                <div class="switch" id="formatSwitch" onclick="toggleFormat()">
+                    <div class="switch-thumb"></div>
+                </div>
+                <span>24h</span>
+            </div>
+        </div>
+        <div class="setting-item">
+            <label class="setting-label">Theme</label>
+            <div class="toggle-switch">
+                <span>Light</span>
+                <div class="switch" id="themeSwitch" onclick="toggleTheme()">
+                    <div class="switch-thumb"></div>
+                </div>
+                <span>Dark</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="clock-container">
+        <div class="time" id="time">00:00:00</div>
+        <div class="date" id="date">Loading...</div>
+        <div class="day" id="day">Loading...</div>
+        <div class="timezone" id="timezone">Loading...</div>
+    </div>
+
+    <script>
+        let is24Hour = false;
+        let isDark = false;
+
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('active');
+        }
+
+        function toggleFormat() {
+            is24Hour = !is24Hour;
+            document.getElementById('formatSwitch').classList.toggle('active');
+            updateClock();
+        }
+
+        function toggleTheme() {
+            isDark = !isDark;
+            document.body.classList.toggle('dark');
+            document.getElementById('themeSwitch').classList.toggle('active');
+        }
+
+        function getTimeOfDay(hour) {
+            if (hour >= 5 && hour < 7) return 'dawn';
+            if (hour >= 7 && hour < 11) return 'morning';
+            if (hour >= 11 && hour < 14) return 'noon';
+            if (hour >= 14 && hour < 17) return 'afternoon';
+            if (hour >= 17 && hour < 20) return 'dusk';
+            return 'night';
+        }
+
+        function updateClock() {
+            const now = new Date();
+            
+            // Time
+            let hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            
+            let displayHours = hours;
+            let period = '';
+            
+            if (!is24Hour) {
+                period = hours >= 12 ? ' PM' : ' AM';
+                displayHours = hours % 12 || 12;
+            }
+            
+            const timeString = `${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}${period}`;
+            document.getElementById('time').textContent = timeString;
+            
+            // Date
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = now.toLocaleDateString('en-US', options);
+            document.getElementById('date').textContent = dateString;
+            
+            // Day
+            const dayString = now.toLocaleDateString('en-US', { weekday: 'long' });
+            document.getElementById('day').textContent = dayString;
+            
+            // Timezone
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const offset = -now.getTimezoneOffset() / 60;
+            const offsetString = `GMT${offset >= 0 ? '+' : ''}${offset}`;
+            document.getElementById('timezone').textContent = `${timezone} (${offsetString})`;
+            
+            // Update background based on time of day
+            const timeOfDay = getTimeOfDay(hours);
+            document.body.className = document.body.className.replace(/\b(dawn|morning|noon|afternoon|dusk|night)\b/g, '');
+            document.body.classList.add(timeOfDay);
+            if (isDark) {
+                document.body.classList.add('dark');
+            }
+        }
+
+        // Close settings panel when clicking outside
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('settingsPanel');
+            const icon = document.querySelector('.settings-icon');
+            
+            if (!panel.contains(event.target) && !icon.contains(event.target)) {
+                panel.classList.remove('active');
+            }
+        });
+
+        // Initialize
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>

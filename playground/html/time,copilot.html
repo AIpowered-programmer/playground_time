@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elegant Digital Clock</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      transition: background 2s ease, color 0.5s ease;
+      background: linear-gradient(to bottom, #001f3f, #0074D9);
+      color: white;
+    }
+    .clock-container {
+      text-align: center;
+    }
+    .clock {
+      font-size: 6rem;
+      font-weight: 300;
+    }
+    .date {
+      font-size: 1.5rem;
+      margin-top: 0.5rem;
+    }
+    .timezone {
+      font-size: 1rem;
+      margin-top: 0.5rem;
+      opacity: 0.8;
+    }
+    .controls button {
+      margin: 1rem 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .settings-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+      font-size: 1.5rem;
+    }
+    .settings-panel {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 10px;
+      display: none;
+    }
+    .light-theme {
+      background: linear-gradient(to bottom, #f0f0f0, #ffffff);
+      color: #333;
+    }
+    @media (max-width: 600px) {
+      .clock {
+        font-size: 3rem;
+      }
+      .date {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
+  <div class="clock-container">
+    <div class="clock" id="clock">00:00:00</div>
+    <div class="date" id="date">Friday, November 7, 2025</div>
+    <div class="timezone" id="timezone">India Standard Time (IST)</div>
+    <div class="controls">
+      <button onclick="toggleFormat()">Toggle 12/24 Hour</button>
+      <button onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+  </div>
+  <div class="settings-panel" id="settings-panel">
+    <label for="font-select">Font:</label>
+    <select id="font-select" onchange="changeFont(this.value)">
+      <option value="Roboto">Roboto</option>
+      <option value="Lato">Lato</option>
+      <option value="Montserrat">Montserrat</option>
+    </select>
+    <label for="color-select">Accent Color:</label>
+    <input type="color" id="color-select" onchange="changeColor(this.value)" />
+  </div>
+  <script>
+    let is24Hour = true;
+    let isLightTheme = false;
+
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+
+      if (!is24Hour) {
+        hours = hours % 12 || 12;
+      }
+
+      const timeString = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      document.getElementById('clock').textContent = timeString;
+
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('date').textContent = now.toLocaleDateString(undefined, options);
+
+      document.getElementById('timezone').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      updateBackground(now.getHours());
+    }
+
+    function pad(num) {
+      return num.toString().padStart(2, '0');
+    }
+
+    function toggleFormat() {
+      is24Hour = !is24Hour;
+    }
+
+    function toggleTheme() {
+      isLightTheme = !isLightTheme;
+      document.body.classList.toggle('light-theme', isLightTheme);
+    }
+
+    function updateBackground(hour) {
+      let gradient;
+      if (hour >= 5 && hour < 8) {
+        gradient = 'linear-gradient(to bottom, #FFA07A, #FFD700)'; // dawn
+      } else if (hour >= 8 && hour < 17) {
+        gradient = 'linear-gradient(to bottom, #87CEFA, #FFFFFF)'; // noon
+      } else if (hour >= 17 && hour < 20) {
+        gradient = 'linear-gradient(to bottom, #FF8C00, #FF6347)'; // dusk
+      } else {
+        gradient = 'linear-gradient(to bottom, #001f3f, #0074D9)'; // night
+      }
+      document.body.style.background = gradient;
+    }
+
+    function toggleSettings() {
+      const panel = document.getElementById('settings-panel');
+      panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function changeFont(font) {
+      document.body.style.fontFamily = font;
+    }
+
+    function changeColor(color) {
+      document.querySelectorAll('.controls button').forEach(btn => {
+        btn.style.background = color;
+      });
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
